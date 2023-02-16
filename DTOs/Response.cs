@@ -13,9 +13,9 @@ namespace MovieAPi.DTOs
             Message = message;
             Data = data;
         }
-        public Response(string message)
+        public Response(bool success, string message)
         {
-            Succeeded = false;
+            Succeeded = success;
             Message = message;
         }
         public bool Succeeded { get; set; }

@@ -41,11 +41,13 @@ namespace MovieAPi
             #region Repositories
             services.AddTransient(typeof(IGenericRepositoryAsync<>), typeof(GenericRepositoryAsync<>));
             services.AddTransient<IUserRepositoryAsync, UserRepositoryAsync>();
+            services.AddTransient<ITagRepositoryAsync, TagRepositoryAsync>();
             #endregion
             
             #region Services
             services.AddTransient<IUserServices, UserServices>();
             services.AddTransient<ICustomAuthService, CustomAuthService>();
+            services.AddTransient<ITagServices, TagServices>();
             #endregion
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
