@@ -9,7 +9,14 @@ namespace MovieAPi.Entities
         }
         
         public virtual DbSet<User> Users { get; set; }
-        
+        public virtual DbSet<Tag> Tags { get; set; }
+        public virtual DbSet<Movie> Movies { get; set; }
+        public virtual DbSet<MovieTag> MovieTags { get; set; }
+        public virtual DbSet<Studio> Studios { get; set; }
+        public virtual DbSet<MovieSchedule> MovieSchedules { get; set; }
+        public virtual DbSet<Order> Orders { get; set; }
+        public virtual DbSet<OrderItem> OrderItems { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
