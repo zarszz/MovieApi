@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MovieAPi.DTOs.V1.Request;
+using MovieAPi.Interfaces;
 
 namespace MovieAPi.Controllers
 {
@@ -11,11 +13,24 @@ namespace MovieAPi.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
+        private readonly ICustomAuthService _customAuthService;
+        public AuthController(ICustomAuthService customAuthService)
+        {
+            _customAuthService = customAuthService;
+        }
+        
         // POST: api/Auth/login
         [HttpPost("login")]
-        public string Login()
+        public Task<IActionResult> Login(LoginUserDto loginUserDto)
         {
-            return "login success";
+            return _customAuthService.GenerateAccessToken(loginUserDto);
+        }
+        
+        // POST: api/Auth/register
+        [HttpPost("register")]
+        public Task<IActionResult> Register(RegisterUserDto registerUserDto)
+        {
+            return _customAuthService.RegisterNewUser(registerUserDto);
         }
         
         // POST: api/Auth/logout

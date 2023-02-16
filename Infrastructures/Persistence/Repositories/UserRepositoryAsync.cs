@@ -35,9 +35,11 @@ namespace MovieAPi.Infrastructures.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public Task<User> AddAsync(User entity)
+        public async Task<User> AddAsync(User entity)
         {
-            throw new System.NotImplementedException();
+            await _context.Set<User>().AddAsync(entity);
+            await _context.SaveChangesAsync();
+            return entity;        
         }
 
         public Task UpdateAsync(User entity)
@@ -48,6 +50,11 @@ namespace MovieAPi.Infrastructures.Persistence.Repositories
         public Task DeleteAsync(User entity)
         {
             throw new System.NotImplementedException();
+        }
+
+        public async Task<User> GetByEmail(string email)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
     }
 }
