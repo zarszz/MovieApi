@@ -36,14 +36,16 @@ namespace MovieAPi.Infrastructures.Persistence.Repositories
 
         public async Task<MovieSchedule> GetByIdAsync(int id)
         {
-            return await _context.MovieSchedules.FindAsync(id);
+            return await _context.MovieSchedules.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id);
         }
 
         public async Task<IReadOnlyList<MovieSchedule>> GetPagedResponseAsync(int pageNumber, int pageSize)
         {
             return await _context.MovieSchedules
+                .Include(m => m.Studio)
                 .Include(m => m.Movie)
                 .ThenInclude(m => m.MovieTags)
+                .ThenInclude(mt => mt.Tag)
                 .Skip((pageNumber) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

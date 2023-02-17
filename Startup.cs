@@ -45,6 +45,7 @@ namespace MovieAPi
             services.AddTransient<IMovieRepositoryAsync, MovieRepositoryAsync>();
             services.AddTransient<IMovieTagRepositoryAsync, MovieTagRepositoryAsync>();
             services.AddTransient<IStudioRepositoryAsync, StudioRepositoryAsync>();
+            services.AddTransient<IMovieScheduleRepositoryAsync, MovieScheduleRepositoryAsync>();
             #endregion
             
             #region Services
@@ -53,7 +54,7 @@ namespace MovieAPi
             services.AddTransient<ITagServices, TagServices>();
             services.AddTransient<IMovieServices, MovieServices>();
             services.AddTransient<IStudioServices, StudioServices>();
-
+            services.AddTransient<IMovieScheduleServices, MovieScheduleService>();
             #endregion
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
