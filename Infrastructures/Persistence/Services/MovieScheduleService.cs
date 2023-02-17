@@ -40,8 +40,7 @@ namespace MovieAPi.Infrastructures.Persistence.Services
 
         public async Task<IActionResult> GetPagedResponseAsync(GetMovieScheduleParams getMovieScheduleParams)
         {
-            var movieSchedules = await _movieScheduleRepositoryAsync.GetPagedResponseAsync(getMovieScheduleParams.Page,
-                getMovieScheduleParams.Size);
+            var movieSchedules = await _movieScheduleRepositoryAsync.GetPagedResponseAsync(getMovieScheduleParams);
             var result = movieSchedules.Select(ResponseMovieScheduleDto.FromEntity).ToList();
             var response = new Response<IQueryable<ResponseMovieScheduleDto>>(result.AsQueryable(),
                 "get movie schedules successfully");
