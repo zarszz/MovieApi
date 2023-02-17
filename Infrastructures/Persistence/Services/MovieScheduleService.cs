@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using MovieAPi.DTOs;
 using MovieAPi.DTOs.V1.Request;
 using MovieAPi.DTOs.V1.Response;
@@ -16,24 +17,27 @@ namespace MovieAPi.Infrastructures.Persistence.Services
         private readonly IMovieScheduleRepositoryAsync _movieScheduleRepositoryAsync;
         private readonly IMovieRepositoryAsync _movieRepositoryAsync;
         private readonly IStudioRepositoryAsync _studioRepositoryAsync;
+        private readonly ILogger<MovieSchedule> _logger;
 
         public MovieScheduleService(IMovieScheduleRepositoryAsync movieScheduleRepositoryAsync,
-            IMovieRepositoryAsync movieRepositoryAsync, IStudioRepositoryAsync studioRepositoryAsync)
+            IMovieRepositoryAsync movieRepositoryAsync, IStudioRepositoryAsync studioRepositoryAsync,
+            ILogger<MovieSchedule> logger)
         {
             _movieScheduleRepositoryAsync = movieScheduleRepositoryAsync;
             _movieRepositoryAsync = movieRepositoryAsync;
             _studioRepositoryAsync = studioRepositoryAsync;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Create(CreateMovieScheduleDto createMovieScheduleDto)
         {
-
             var schedulePair = await buildMovieSchedule(createMovieScheduleDto);
             if (!(bool)schedulePair["isSuccess"])
             {
                 return new NotFoundObjectResult(new Response<string>(false, "Some data not found"));
             }
-            await _movieScheduleRepositoryAsync.AddAsync((MovieSchedule) schedulePair["movieSchedule"]);
+
+            await _movieScheduleRepositoryAsync.AddAsync((MovieSchedule)schedulePair["movieSchedule"]);
             var response = new Response<ResponseMovieScheduleDto>(true, "create movie schedule successfully");
             return new OkObjectResult(response);
         }
@@ -52,19 +56,21 @@ namespace MovieAPi.Infrastructures.Persistence.Services
             var currentSchedule = await _movieScheduleRepositoryAsync.GetByIdAsync(id);
             if (currentSchedule == null)
             {
+                _logger.Log(LogLevel.Error,
+                    $"[[MovieScheduleService.Update] MovieSchedule with id: {id} not found");
                 return new NotFoundObjectResult(new Response<string>(false, "Movie schedule not found"));
             }
-            
+
             var schedulePair = await buildMovieSchedule(createMovieScheduleDto);
             if (!(bool)schedulePair["isSuccess"])
             {
                 return new NotFoundObjectResult(new Response<string>(false, "Some data not found"));
             }
-            
+
             var schedule = (MovieSchedule)schedulePair["movieSchedule"];
             schedule.Id = currentSchedule.Id;
             await _movieScheduleRepositoryAsync.UpdateAsync(schedule);
-            
+
             return new OkObjectResult(new Response<string>(true, "Update movieSchedule successfully"));
         }
 
@@ -73,6 +79,8 @@ namespace MovieAPi.Infrastructures.Persistence.Services
             var entity = await _movieScheduleRepositoryAsync.GetByIdAsync(id);
             if (entity == null)
             {
+                _logger.Log(LogLevel.Error,
+                    $"[[MovieScheduleService.Update] MovieSchedule with id: {id} not found");
                 return new NotFoundObjectResult(new Response<string>(false, "Movie schedule not found"));
             }
 
@@ -85,7 +93,8 @@ namespace MovieAPi.Infrastructures.Persistence.Services
             var movie = await _movieRepositoryAsync.GetByIdAsync(createMovieScheduleDto.MovieId);
             if (movie == null)
             {
-                // TODO Log here
+                _logger.Log(LogLevel.Error,
+                    $"[[MovieScheduleService.buildMovieSchedule] Movie with id: {createMovieScheduleDto.MovieId} not found");
                 return new Dictionary<string, object>
                 {
                     { "movieSchedule", null },
@@ -96,7 +105,8 @@ namespace MovieAPi.Infrastructures.Persistence.Services
             var studio = await _studioRepositoryAsync.GetByIdAsync(createMovieScheduleDto.StudioId);
             if (studio == null)
             {
-                // TODO Log here
+                _logger.Log(LogLevel.Error,
+                    $"[[MovieScheduleService.buildMovieSchedule] Studio with id: {createMovieScheduleDto.StudioId} not found");
                 return new Dictionary<string, object>
                 {
                     { "movieSchedule", null },

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using MovieAPi.DTOs;
 using MovieAPi.DTOs.V1.Request;
 using MovieAPi.DTOs.V1.Response;
@@ -14,10 +15,12 @@ namespace MovieAPi.Infrastructures.Persistence.Services
     public class StudioServices : IStudioServices
     {
         private readonly IStudioRepositoryAsync _studioRepositoryAsync;
+        private readonly ILogger<Studio> _logger;
 
-        public StudioServices(IStudioRepositoryAsync StudioRepositoryAsync)
+        public StudioServices(IStudioRepositoryAsync StudioRepositoryAsync, ILogger<Studio> logger)
         {
             _studioRepositoryAsync = StudioRepositoryAsync;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Create(CreateStudioDto createStudioDto)
@@ -57,6 +60,8 @@ namespace MovieAPi.Infrastructures.Persistence.Services
             var entity = await _studioRepositoryAsync.GetByIdAsync(id);
             if (entity == null)
             {
+                _logger.Log(LogLevel.Error,
+                    $"[[StudioServices.Update] Studio with id: {id} not found");
                 return new NotFoundObjectResult(new Response<string>(false, "Studio not found"));
             }
             entity.StudioNumber = createStudioDto.StudioNumber;
@@ -70,6 +75,8 @@ namespace MovieAPi.Infrastructures.Persistence.Services
             var entity = await _studioRepositoryAsync.GetByIdAsync(id);
             if (entity == null)
             {
+                _logger.Log(LogLevel.Error,
+                    $"[[StudioServices.Delete] Studio with id: {id} not found");
                 return new NotFoundObjectResult(new Response<string>(false, "Studio not found"));
             }
             await _studioRepositoryAsync.DeleteAsync(entity);

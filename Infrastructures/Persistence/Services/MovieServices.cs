@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.Web.CodeGeneration;
 using MovieAPi.DTOs;
 using MovieAPi.DTOs.V1.Request;
 using MovieAPi.DTOs.V1.Response;
@@ -16,12 +18,16 @@ namespace MovieAPi.Infrastructures.Persistence.Services
         private readonly IMovieRepositoryAsync _movieRepositoryAsync;
         private readonly IMovieTagRepositoryAsync _movieTagRepositoryAsync;
         private readonly ITagRepositoryAsync _tagRepositoryAsync;
+        private readonly ILogger<Movie> _logger;
 
-        public MovieServices(IMovieRepositoryAsync movieRepositoryAsync, IMovieTagRepositoryAsync movieTagRepositoryAsync , ITagRepositoryAsync tagRepositoryAsync)
+        public MovieServices(IMovieRepositoryAsync movieRepositoryAsync,
+            IMovieTagRepositoryAsync movieTagRepositoryAsync, ITagRepositoryAsync tagRepositoryAsync,
+            ILogger<Movie> logger)
         {
             _movieRepositoryAsync = movieRepositoryAsync;
             _movieTagRepositoryAsync = movieTagRepositoryAsync;
             _tagRepositoryAsync = tagRepositoryAsync;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Create(CreateMovieDto createMovieDto)
@@ -33,7 +39,7 @@ namespace MovieAPi.Infrastructures.Persistence.Services
                 Title = createMovieDto.Title,
                 PlayUntil = createMovieDto.PlayUntil
             };
-            
+
             var savedMovie = await _movieRepositoryAsync.AddAsync(movie);
             var movieTags = new List<MovieTag>();
 
@@ -42,7 +48,9 @@ namespace MovieAPi.Infrastructures.Persistence.Services
                 var tag = await _tagRepositoryAsync.GetByIdAsync(movieTagId);
                 if (tag == null)
                 {
-                    return new NotFoundObjectResult(new {message = $"MovieTag with id {movieTagId} not found"});
+                    _logger.Log(LogLevel.Error,
+                        $"[[MovieService.Create] Tag with id: {movieTagId} not found");
+                    return new NotFoundObjectResult(new { message = $"MovieTag with id {movieTagId} not found" });
                 }
 
                 var movieTag = new MovieTag()
@@ -54,9 +62,9 @@ namespace MovieAPi.Infrastructures.Persistence.Services
                 };
                 movieTags.Add(movieTag);
             }
-            var savedMovieTags =  _movieTagRepositoryAsync.BulkInsert(movieTags);
-            return new OkObjectResult(new Response<IList<MovieTag>>(savedMovieTags, "save new movie success"));
 
+            var savedMovieTags = _movieTagRepositoryAsync.BulkInsert(movieTags);
+            return new OkObjectResult(new Response<IList<MovieTag>>(savedMovieTags, "save new movie success"));
         }
 
         public async Task<IActionResult> GetPagedResponseAsync(GetMoviesParams getMoviesParams)
@@ -78,11 +86,14 @@ namespace MovieAPi.Infrastructures.Persistence.Services
         {
             // begin a transaction
             var context = new DatabaseContext();
-            var transaction = await context.Database.BeginTransactionAsync();;
-            
+            var transaction = await context.Database.BeginTransactionAsync();
+            ;
+
             var movie = await _movieRepositoryAsync.WithTransaction(context).GetByIdAsync(id);
             if (movie == null)
             {
+                _logger.Log(LogLevel.Error,
+                    $"[[MovieService.Update] Movie with id: {id} not found");
                 await transaction.RollbackAsync();
                 return new NotFoundObjectResult(new Response<string>(false, "movie not found"));
             }
@@ -104,6 +115,8 @@ namespace MovieAPi.Infrastructures.Persistence.Services
                     var tag = await _tagRepositoryAsync.WithTransaction(context).GetByIdAsync(movieTagId);
                     if (tag == null)
                     {
+                        _logger.Log(LogLevel.Error,
+                            $"[[MovieService.Update] Tag with id: {id} not found");
                         await transaction.RollbackAsync();
                         return new NotFoundObjectResult(new { message = $"MovieTag with id {movieTagId} not found" });
                     }
@@ -135,10 +148,13 @@ namespace MovieAPi.Infrastructures.Persistence.Services
             var movie = await _movieRepositoryAsync.GetByIdAsync(id);
             if (movie == null)
             {
+                _logger.Log(LogLevel.Error,
+                    $"[[MovieService.Delete] Movie with id: {id} not found");
                 return new NotFoundObjectResult(new Response<string>(false, "movie not found"));
             }
+
             await _movieRepositoryAsync.DeleteAsync(movie);
-            
+
             return new OkObjectResult(new Response<string>(true, "delete movie success"));
         }
     }
