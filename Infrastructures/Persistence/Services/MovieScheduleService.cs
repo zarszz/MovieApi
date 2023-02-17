@@ -29,5 +29,20 @@ namespace MovieAPi.Infrastructures.Persistence.Services
 
             return new OkObjectResult(new Response<string>(true, "ok"));
         }
+
+        public Task<IActionResult> GetPagedResponseAsync(GetMoviesParams getMoviesParams)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<IActionResult> Update(CreateMovieDto createMovieDto, int id)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<IActionResult> Delete(int id)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

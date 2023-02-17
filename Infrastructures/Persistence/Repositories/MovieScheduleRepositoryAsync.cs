@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using MovieAPi.Entities;
 using MovieAPi.Interfaces.Persistence.Repositories;
 
@@ -23,27 +25,34 @@ namespace MovieAPi.Infrastructures.Persistence.Repositories
 
         public Task DeleteAsync(MovieSchedule entity)
         {
-            throw new System.NotImplementedException();
+            _context.MovieSchedules.Remove(entity);
+            return _context.SaveChangesAsync();
         }
 
-        public Task<IReadOnlyList<MovieSchedule>> GetAllAsync()
+        public async Task<IReadOnlyList<MovieSchedule>> GetAllAsync()
         {
-            throw new System.NotImplementedException();
+            return await _context.MovieSchedules.ToListAsync();
         }
 
-        public Task<MovieSchedule> GetByIdAsync(int id)
+        public async Task<MovieSchedule> GetByIdAsync(int id)
         {
-            throw new System.NotImplementedException();
+            return await _context.MovieSchedules.FindAsync(id);
         }
 
-        public Task<IReadOnlyList<MovieSchedule>> GetPagedResponseAsync(int pageNumber, int pageSize)
+        public async Task<IReadOnlyList<MovieSchedule>> GetPagedResponseAsync(int pageNumber, int pageSize)
         {
-            throw new System.NotImplementedException();
+            return await _context.MovieSchedules
+                .Include(m => m.Movie)
+                .ThenInclude(m => m.MovieTags)
+                .Skip((pageNumber) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
         }
 
         public Task UpdateAsync(MovieSchedule entity)
-        {
-            throw new System.NotImplementedException();
+        { 
+            _context.MovieSchedules.Update(entity);
+            return _context.SaveChangesAsync();
         }
     }
 }
