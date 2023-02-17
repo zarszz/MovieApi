@@ -20,6 +20,7 @@ using MovieAPi.Infrastructures.Persistence.Services;
 using MovieAPi.Interfaces;
 using MovieAPi.Interfaces.Persistence.Repositories;
 using MovieAPi.Interfaces.Persistence.Services;
+using MovieAPi.Middleware;
 
 namespace MovieAPi
 {
@@ -46,6 +47,7 @@ namespace MovieAPi
             services.AddTransient<IMovieTagRepositoryAsync, MovieTagRepositoryAsync>();
             services.AddTransient<IStudioRepositoryAsync, StudioRepositoryAsync>();
             services.AddTransient<IMovieScheduleRepositoryAsync, MovieScheduleRepositoryAsync>();
+            services.AddTransient<IHttpRequestLogRepositoryAsync, HttpRequestLogRepositoryAsync>();
             #endregion
             
             #region Services
@@ -55,6 +57,7 @@ namespace MovieAPi
             services.AddTransient<IMovieServices, MovieServices>();
             services.AddTransient<IStudioServices, StudioServices>();
             services.AddTransient<IMovieScheduleServices, MovieScheduleService>();
+            services.AddTransient<IHttpRequestLogService, HttpRequestLogService>();
             #endregion
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
@@ -81,6 +84,8 @@ namespace MovieAPi
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseMiddleware<LoggingMiddleware>();
 
             app.UseHttpsRedirection();
 

@@ -20,6 +20,7 @@ namespace MovieAPi.Entities
         public virtual DbSet<MovieSchedule> MovieSchedules { get; set; }
         public virtual DbSet<Order> Orders { get; set; }
         public virtual DbSet<OrderItem> OrderItems { get; set; }
+        public virtual DbSet<HttpRequestLog> HttpRequestLogs { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
