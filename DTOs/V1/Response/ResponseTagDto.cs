@@ -15,5 +15,14 @@ namespace MovieAPi.DTOs.V1.Response
                 Name = tag.Name
             };
         }
+        
+        public static ResponseTagDto FromMovieTagEntity(MovieTag tag)
+        {
+            return new ResponseTagDto
+            {
+                Id = tag.Tag.Id,
+                Name = tag.Tag.Name
+            };
+        }
     }
 }

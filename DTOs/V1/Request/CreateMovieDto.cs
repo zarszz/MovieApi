@@ -1,14 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
-
-namespace MovieAPi.Entities
+namespace MovieAPi.DTOs.V1.Request
 {
-    public class Movie : AuditableBaseEntity
+    public class CreateMovieDto
     {
         public string Title { get; set; }
         public string Overview { get; set; }
         public string Poster { get; set; }
         public string PlayUntil { get; set; }
-        public IList<MovieTag> MovieTags { get; set; }
+        public int[] Tags { get; set; }
     }
 }

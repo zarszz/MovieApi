@@ -5,6 +5,6 @@ namespace MovieAPi.Entities
     public class Tag : AuditableBaseEntity
     {
         public string Name { get; set; }
-        public ICollection<MovieTag> MovieTags { get; set; }
+        public IList<MovieTag> MovieTags { get; set; }
     }
 }

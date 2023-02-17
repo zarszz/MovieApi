@@ -51,5 +51,10 @@ namespace MovieAPi.Infrastructures.Persistence.Repositories
             _context.Tags.Remove(entity);
             await _context.SaveChangesAsync();
         }
+
+        public ITagRepositoryAsync WithTransaction(DatabaseContext context)
+        {
+            return new TagRepositoryAsync(context);
+        }
     }
 }
