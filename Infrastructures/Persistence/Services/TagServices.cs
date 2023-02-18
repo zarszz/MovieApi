@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.Web.CodeGeneration;
@@ -18,15 +20,24 @@ namespace MovieAPi.Infrastructures.Persistence.Services
     {
         private readonly ITagRepositoryAsync _tagRepositoryAsync;
         private readonly ILogger<Tag> _logger;
+        private readonly IValidator<CreateTagDto> _createTagValidator;
 
-        public TagServices(ITagRepositoryAsync tagRepositoryAsync, ILogger<Tag> logger)
+        public TagServices(ITagRepositoryAsync tagRepositoryAsync, ILogger<Tag> logger, IValidator<CreateTagDto> createTagValidator)
         {
             _tagRepositoryAsync = tagRepositoryAsync;
             _logger = logger;
+            _createTagValidator = createTagValidator;
         }
 
         public async Task<IActionResult> Create(CreateTagDto createTagDto)
         {
+            var validationResult = await _createTagValidator.ValidateAsync(createTagDto);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors;
+                var messages = errors.Select(e => e.ErrorMessage).ToList();
+                return new BadRequestObjectResult(new Response<List<string>>(messages, "create tag failed"));
+            }
             var entity = new Tag
             {
                 Name = createTagDto.Name
@@ -58,6 +69,13 @@ namespace MovieAPi.Infrastructures.Persistence.Services
 
         public async Task<IActionResult> Update(CreateTagDto createTagDto, int id)
         {
+            var validationResult = await _createTagValidator.ValidateAsync(createTagDto);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors;
+                var messages = errors.Select(e => e.ErrorMessage).ToList();
+                return new BadRequestObjectResult(new Response<List<string>>(messages, "update tag failed"));
+            }
             var entity = await _tagRepositoryAsync.GetByIdAsync(id);
             if (entity == null)
             {

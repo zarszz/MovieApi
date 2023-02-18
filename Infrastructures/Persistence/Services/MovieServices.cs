@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.Web.CodeGeneration;
@@ -19,19 +21,29 @@ namespace MovieAPi.Infrastructures.Persistence.Services
         private readonly IMovieTagRepositoryAsync _movieTagRepositoryAsync;
         private readonly ITagRepositoryAsync _tagRepositoryAsync;
         private readonly ILogger<Movie> _logger;
+        private readonly IValidator<CreateMovieDto> _createMovieValidator;
 
         public MovieServices(IMovieRepositoryAsync movieRepositoryAsync,
             IMovieTagRepositoryAsync movieTagRepositoryAsync, ITagRepositoryAsync tagRepositoryAsync,
-            ILogger<Movie> logger)
+            ILogger<Movie> logger, IValidator<CreateMovieDto> createMovieValidator)
         {
             _movieRepositoryAsync = movieRepositoryAsync;
             _movieTagRepositoryAsync = movieTagRepositoryAsync;
             _tagRepositoryAsync = tagRepositoryAsync;
             _logger = logger;
+            _createMovieValidator = createMovieValidator;
         }
 
         public async Task<IActionResult> Create(CreateMovieDto createMovieDto)
         {
+            var validationResult = await _createMovieValidator.ValidateAsync(createMovieDto);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors;
+                var messages = errors.Select(e => e.ErrorMessage).ToList();
+                return new BadRequestObjectResult(new Response<List<string>>(messages, "create movie failed"));
+            }
+            
             var movie = new Movie
             {
                 Overview = createMovieDto.Overview,
@@ -84,10 +96,17 @@ namespace MovieAPi.Infrastructures.Persistence.Services
 
         public async Task<IActionResult> Update(CreateMovieDto createMovieDto, int id)
         {
+            var validationResult = await _createMovieValidator.ValidateAsync(createMovieDto);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors;
+                var messages = errors.Select(e => e.ErrorMessage).ToList();
+                return new BadRequestObjectResult(new Response<List<string>>(messages, "update movie failed"));
+            }
+            
             // begin a transaction
             var context = new DatabaseContext();
             var transaction = await context.Database.BeginTransactionAsync();
-            ;
 
             var movie = await _movieRepositoryAsync.WithTransaction(context).GetByIdAsync(id);
             if (movie == null)

@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MovieAPi.DTOs;
@@ -18,19 +20,28 @@ namespace MovieAPi.Infrastructures.Persistence.Services
         private readonly IMovieRepositoryAsync _movieRepositoryAsync;
         private readonly IStudioRepositoryAsync _studioRepositoryAsync;
         private readonly ILogger<MovieSchedule> _logger;
+        private readonly IValidator<CreateMovieScheduleDto> _createMovieScheduleValidator;
 
         public MovieScheduleService(IMovieScheduleRepositoryAsync movieScheduleRepositoryAsync,
             IMovieRepositoryAsync movieRepositoryAsync, IStudioRepositoryAsync studioRepositoryAsync,
-            ILogger<MovieSchedule> logger)
+            ILogger<MovieSchedule> logger, IValidator<CreateMovieScheduleDto> createMovieScheduleValidator)
         {
             _movieScheduleRepositoryAsync = movieScheduleRepositoryAsync;
             _movieRepositoryAsync = movieRepositoryAsync;
             _studioRepositoryAsync = studioRepositoryAsync;
             _logger = logger;
+            _createMovieScheduleValidator = createMovieScheduleValidator;
         }
 
         public async Task<IActionResult> Create(CreateMovieScheduleDto createMovieScheduleDto)
         {
+            var validationResult = await _createMovieScheduleValidator.ValidateAsync(createMovieScheduleDto);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors;
+                var messages = errors.Select(e => e.ErrorMessage).ToList();
+                return new BadRequestObjectResult(new Response<List<string>>(messages, "create movie schedule failed"));
+            }
             var schedulePair = await buildMovieSchedule(createMovieScheduleDto);
             if (!(bool)schedulePair["isSuccess"])
             {
@@ -53,6 +64,13 @@ namespace MovieAPi.Infrastructures.Persistence.Services
 
         public async Task<IActionResult> Update(CreateMovieScheduleDto createMovieScheduleDto, int id)
         {
+            var validationResult = await _createMovieScheduleValidator.ValidateAsync(createMovieScheduleDto);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors;
+                var messages = errors.Select(e => e.ErrorMessage).ToList();
+                return new BadRequestObjectResult(new Response<List<string>>(messages, "update movie schedule failed"));
+            }
             var currentSchedule = await _movieScheduleRepositoryAsync.GetByIdAsync(id);
             if (currentSchedule == null)
             {

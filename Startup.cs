@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using MovieAPi.DTOs.V1.Request;
 using MovieAPi.Entities;
 using MovieAPi.Infrastructures.Persistence.Repositories;
 using MovieAPi.Infrastructures.Persistence.Services;
@@ -21,6 +23,7 @@ using MovieAPi.Interfaces;
 using MovieAPi.Interfaces.Persistence.Repositories;
 using MovieAPi.Interfaces.Persistence.Services;
 using MovieAPi.Middleware;
+using MovieAPi.Validator;
 
 namespace MovieAPi
 {
@@ -75,6 +78,13 @@ namespace MovieAPi
             });
             
             services.AddControllers();
+            
+            services.AddScoped<IValidator<CreateMovieDto>, CreateMovieValidator>();
+            services.AddScoped<IValidator<CreateMovieScheduleDto>, CreateMovieScheduleValidator>();
+            services.AddScoped<IValidator<CreateStudioDto>, CreateStudioValidator>();
+            services.AddScoped<IValidator<CreateTagDto>, CreateTagValidator>();
+            services.AddScoped<IValidator<RegisterUserDto>, RegisterUserValidator>();
+            services.AddScoped<IValidator<LoginUserDto>, LoginUserValidator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

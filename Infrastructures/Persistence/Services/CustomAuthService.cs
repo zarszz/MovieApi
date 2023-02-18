@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -20,15 +24,27 @@ namespace MovieAPi.Infrastructures.Persistence.Services
     {
         private readonly IConfiguration _configuration;
         private readonly IUserRepositoryAsync _userRepository;
+        private readonly IValidator<RegisterUserDto> _registerUserValidator;
+        private readonly IValidator<LoginUserDto> _loginUserValidator;
 
-        public CustomAuthService(IConfiguration configuration, IUserRepositoryAsync userRepository)
+        public CustomAuthService(IConfiguration configuration, IUserRepositoryAsync userRepository,
+            IValidator<RegisterUserDto> registerUserValidator, IValidator<LoginUserDto> loginUserValidator)
         {
-            _userRepository = userRepository;
             _configuration = configuration;
+            _userRepository = userRepository;
+            _registerUserValidator = registerUserValidator;
+            _loginUserValidator = loginUserValidator;
         }
 
         public async Task<IActionResult> GenerateAccessToken(LoginUserDto loginUserDto)
         {
+            var validationResult = await _loginUserValidator.ValidateAsync(loginUserDto);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors;
+                var messages = errors.Select(e => e.ErrorMessage).ToList();
+                return new BadRequestObjectResult(new Response<List<string>>(messages, "login failed"));
+            }
             var user = await GetUser(loginUserDto.Email);
             if (user == null) return new BadRequestObjectResult("invalid email or password");
             if (!validatePassword(loginUserDto.Password, user.Password))
@@ -57,6 +73,13 @@ namespace MovieAPi.Infrastructures.Persistence.Services
 
         public async Task<IActionResult> RegisterNewUser(RegisterUserDto registerUserDto)
         {
+            var validationResult = await _registerUserValidator.ValidateAsync(registerUserDto);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors;
+                var messages = errors.Select(e => e.ErrorMessage).ToList();
+                return new BadRequestObjectResult(new Response<List<string>>(messages, "register failed"));
+            }
             var user = new User
             {
                 Email = registerUserDto.Email,
