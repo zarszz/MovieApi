@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MovieAPi.DTOs.V1.Request;
 using MovieAPi.Interfaces.Persistence.Services;
@@ -24,6 +25,7 @@ namespace MovieAPi.Controllers
         
         // POST: api/Studio
         [HttpPost]
+        [Authorize]
         public Task<IActionResult> Post(CreateStudioDto createStudioDto)
         {
             return _StudioServices.Create(createStudioDto);
@@ -31,6 +33,7 @@ namespace MovieAPi.Controllers
 
         // PUT: api/Studio/5
         [HttpPut("{id}")]
+        [Authorize]
         public Task<IActionResult> Put(int id, CreateStudioDto createStudioDto)
         {
             return _StudioServices.Update(createStudioDto, id);
@@ -38,6 +41,7 @@ namespace MovieAPi.Controllers
 
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
+        [Authorize]
         public Task<IActionResult> Delete(int id)
         {
             return _StudioServices.Delete(id);

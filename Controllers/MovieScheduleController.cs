@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MovieAPi.DTOs.V1.Request;
 using MovieAPi.Interfaces.Persistence.Services;
@@ -24,6 +25,7 @@ namespace MovieAPi.Controllers
         
         // POST: api/MovieSchedule
         [HttpPost]
+        [Authorize]
         public Task<IActionResult> Post(CreateMovieScheduleDto createMovieScheduleDto)
         {
             return _MovieScheduleServices.Create(createMovieScheduleDto);
@@ -31,6 +33,7 @@ namespace MovieAPi.Controllers
 
         // PUT: api/MovieSchedule/5
         [HttpPut("{id}")]
+        [Authorize]
         public Task<IActionResult> Put(int id, CreateMovieScheduleDto createMovieScheduleDto)
         {
             return _MovieScheduleServices.Update(createMovieScheduleDto, id);
@@ -38,6 +41,7 @@ namespace MovieAPi.Controllers
 
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
+        [Authorize]
         public Task<IActionResult> Delete(int id)
         {
             return _MovieScheduleServices.Delete(id);

@@ -39,6 +39,7 @@ namespace MovieAPi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHttpContextAccessor();
             var connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<DatabaseContext>(opts => opts.UseSqlServer(connection));
             
@@ -96,8 +97,6 @@ namespace MovieAPi
             }
 
             app.UseMiddleware<LoggingMiddleware>();
-
-            app.UseHttpsRedirection();
 
             app.UseRouting();
 

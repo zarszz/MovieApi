@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MovieAPi.DTOs.V1.Request;
@@ -35,6 +36,7 @@ namespace MovieAPi.Controllers
 
         // POST: api/Tag
         [HttpPost]
+        [Authorize]
         public Task<IActionResult> Post(CreateTagDto createTagDto)
         {
             return _tagServices.Create(createTagDto);
@@ -42,6 +44,7 @@ namespace MovieAPi.Controllers
 
         // PUT: api/Tag/5
         [HttpPut("{id}")]
+        [Authorize]
         public Task<IActionResult> Put(int id, CreateTagDto createTagDto)
         {
             return _tagServices.Update(createTagDto, id);
@@ -49,6 +52,7 @@ namespace MovieAPi.Controllers
 
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
+        [Authorize]
         public Task<IActionResult> Delete(int id)
         {
             return _tagServices.Delete(id);

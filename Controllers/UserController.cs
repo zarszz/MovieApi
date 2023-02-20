@@ -27,7 +27,7 @@ namespace MovieAPi.Controllers
         [HttpGet]
         public PagedResponse<IEnumerable<ResponseUserDto>> Get(int page = 0, int size = 10)
         {
-            return _userServices.GetPagedResponseAsync(page, size);
+            return null;
         }
 
         // GET: api/User/5
