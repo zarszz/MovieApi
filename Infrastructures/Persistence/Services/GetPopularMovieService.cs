@@ -50,6 +50,8 @@ namespace MovieAPi.Infrastructures.Persistence.Services
         private async ValueTask BuildWorkItemAsync(CancellationToken cancellationToken)
         {
             using var scope = _serviceScopeFactory.CreateScope();
+            // simulate three 5-second tasks to complete
+            // for each enqueued work item
             var guid = Guid.NewGuid();
             _logger.LogInformation("Queue work item {Guid} is starting.", guid);
 
@@ -67,7 +69,8 @@ namespace MovieAPi.Infrastructures.Persistence.Services
                         var genres = await MovieDbClientService.BuildGetRequest<ResponseGenreTheMovieDB>("/genre/movie/list?api_key=95467e28a39b346de61f7c8f8f3f6cea&language=en-US&page=1&sort=desc");
                         foreach (var movie in movies.results)
                         {
-                            var movieExist = await databaseContext.Movies.AnyAsync(m => m.Title.Contains(movie.title), cancellationToken: cancellationToken);
+                            // check if movie already exist in database by id, if exist create one otherwise just log
+                            var movieExist = await databaseContext.Movies.AnyAsync(m => m.Title.Contains(movie.title));
                             if (!movieExist)
                             {
                                 var newMovie = new Movie
@@ -77,11 +80,12 @@ namespace MovieAPi.Infrastructures.Persistence.Services
                                     Poster = movie.poster_path,
                                     PlayUntil = DateTime.Now.AddDays(10).ToString(CultureInfo.InvariantCulture),
                                 };
-                                await databaseContext.Movies.AddAsync(newMovie, cancellationToken);
-                                await databaseContext.SaveChangesAsync(cancellationToken: cancellationToken);
+                                await databaseContext.Movies.AddAsync(newMovie);
+                                await databaseContext.SaveChangesAsync();
 
                                 var tags = new List<MovieTag>();
 
+                                // check if genre/tags is already exist in database by id from api, if exist insert, otherwise create new
                                 foreach (var genre in movie.genre_ids)
                                 {
                                     var currentMovieTag = new MovieTag();
@@ -89,18 +93,19 @@ namespace MovieAPi.Infrastructures.Persistence.Services
                                     var currentGenre = genres.genres.Find(g => g.id == genre);
                                     var genreExist =
                                         await databaseContext.Tags.FirstOrDefaultAsync(
-                                            g => g.Name.Contains(currentGenre.name),
-                                            cancellationToken: cancellationToken);
+                                            g => g.Name.Contains(currentGenre.name));
 
                                     if (genreExist != null)
                                     {
                                         var existingGenre = await databaseContext.Tags.FirstOrDefaultAsync(g =>
-                                            g.Name.Contains(currentGenre.name), cancellationToken: cancellationToken);
+                                            g.Name.Contains(currentGenre.name));
                                         currentMovieTag.TagId = existingGenre.Id;
                                         currentMovieTag.MovieId = newMovie.Id;
                                         tags.Add(currentMovieTag);
                                         continue;
                                     }
+
+                                    ;
 
                                     if (currentGenre != null)
                                     {
@@ -108,8 +113,8 @@ namespace MovieAPi.Infrastructures.Persistence.Services
                                         {
                                             Name = currentGenre.name,
                                         };
-                                        await databaseContext.Tags.AddAsync(newGenre, cancellationToken);
-                                        await databaseContext.SaveChangesAsync(cancellationToken);
+                                        await databaseContext.Tags.AddAsync(newGenre);
+                                        await databaseContext.SaveChangesAsync();
                                         //log if new genre is inserted
                                         _logger.LogInformation("New genre with id {Id} successfully added to database",
                                             genre);
@@ -122,8 +127,8 @@ namespace MovieAPi.Infrastructures.Persistence.Services
                                 }
 
                                 // save to db with context
-                                await databaseContext.BulkInsertAsync(tags, cancellationToken: cancellationToken);
-                                await databaseContext.SaveChangesAsync(cancellationToken: cancellationToken);
+                                await databaseContext.BulkInsertAsync(tags);
+                                await databaseContext.SaveChangesAsync();
 
                                 // log if operation success
                                 _logger.LogInformation("Movie with id {Id} successfully added to database", movie.id);
@@ -138,7 +143,7 @@ namespace MovieAPi.Infrastructures.Persistence.Services
                         var after = DateTime.Now;
                         _logger.LogInformation($"[{after}] Executing task {guid} is completed. Time elapsed: {now.Subtract(after).TotalSeconds} seconds");
                         _logger.LogInformation($"[{after}] Next task will be executed in {after.Add(TimeSpan.FromSeconds(100))}");
-                        await Task.Delay(TimeSpan.FromSeconds(100), cancellationToken);
+                        await Task.Delay(TimeSpan.FromSeconds(60 * 60 * 12), cancellationToken);
                     }, cancellationToken);
                 }
                 catch (OperationCanceledException)
