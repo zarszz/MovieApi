@@ -16,9 +16,9 @@ namespace MovieAPi.Infrastructures.Persistence.Repositories
             _context = dbContext;
         }
         
-        public Task<User> GetByIdAsync(int id)
+        public async Task<User> GetByIdAsync(int id)
         {
-            throw new System.NotImplementedException();
+            return await _context.Users.FindAsync(id);
         }
         public async Task<IReadOnlyList<User>> GetAllAsync()
         {

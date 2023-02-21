@@ -52,6 +52,7 @@ namespace MovieAPi
             services.AddTransient<IStudioRepositoryAsync, StudioRepositoryAsync>();
             services.AddTransient<IMovieScheduleRepositoryAsync, MovieScheduleRepositoryAsync>();
             services.AddTransient<IHttpRequestLogRepositoryAsync, HttpRequestLogRepositoryAsync>();
+            services.AddTransient<IOrderRepositoryAsync, OrderRepositoryAsync>();
             #endregion
             
             #region Services
@@ -62,6 +63,7 @@ namespace MovieAPi
             services.AddTransient<IStudioServices, StudioServices>();
             services.AddTransient<IMovieScheduleServices, MovieScheduleService>();
             services.AddTransient<IHttpRequestLogService, HttpRequestLogService>();
+            services.AddTransient<IOrderServices, OrderServices>();
             #endregion
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
@@ -86,6 +88,7 @@ namespace MovieAPi
             services.AddScoped<IValidator<CreateTagDto>, CreateTagValidator>();
             services.AddScoped<IValidator<RegisterUserDto>, RegisterUserValidator>();
             services.AddScoped<IValidator<LoginUserDto>, LoginUserValidator>();
+            services.AddScoped<IValidator<CreateOrderDto>, CreateOrderValidator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
